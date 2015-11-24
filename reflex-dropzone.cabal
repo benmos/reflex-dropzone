@@ -1,0 +1,38 @@
+Name: reflex-dropzone
+Version: 0.0
+Synopsis: Very Primitive Reflex FRP wrapper for Dropzone.js
+Description: Very Primitive Reflex FRP wrapper for Dropzone.js
+License: BSD3
+License-file: LICENSE
+Author: Ben Moseley
+Maintainer: ben@benmoseley.net
+Stability: Experimental
+Build-type: Simple
+Cabal-version: >=1.9.2
+homepage:    https://github.com/benmos/reflex-dropzone
+bug-reports: https://github.com/benmos/reflex-dropzone/issues
+
+library
+  hs-source-dirs: src
+  build-depends:
+    base >= 4.7 && < 4.9,
+    mtl >= 2.1 && < 2.3,
+    containers == 0.5.*,
+    ghcjs-dom >= 0.1.1.3 && < 0.2,
+    reflex,
+    reflex-dom,
+    these >= 0.4 && < 0.7,
+    transformers >= 0.2
+
+  if impl(ghcjs)
+    build-depends:     ghcjs-base        >= 0.1
+
+  exposed-modules:
+    JavaScript.Dropzone
+    JavaScript.Dropzone.Extras
+
+  ghc-options: -Wall -fwarn-tabs
+
+source-repository head
+  type: git
+  location: https://github.com/benmos/reflex-dropzone
