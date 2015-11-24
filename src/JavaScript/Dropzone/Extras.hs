@@ -4,7 +4,7 @@ module JavaScript.Dropzone.Extras (
 
 where
 
-import Reflex
+-- import Reflex
 
 yyy :: Int
 yyy = 6
