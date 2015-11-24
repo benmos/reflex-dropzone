@@ -31,6 +31,8 @@ library
   exposed-modules:
     JavaScript.Dropzone
     JavaScript.Dropzone.Extras
+    JavaScript.Dropzone.GHCJSDOM
+    JavaScript.Dropzone.Reflex
 
   ghc-options: -Wall -fwarn-tabs
 
