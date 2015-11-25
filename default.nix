@@ -10,7 +10,7 @@ mkDerivation {
                                             suffix = builtins.substring (builtins.stringLength base - 1) 1 base;
                                         in
                                         prefix != "." && suffix != "#" && suffix != "~" &&        # Blacklist
-                                        (stdenv.lib.hasPrefix (toString ./src) (toString path) || # Whitelist
+                                        (stdenv.lib.hasPrefix (toString ./src) (toString path) || # Whitelist 'src' + 'src-js'
                                          builtins.elem base ["reflex-dropzone.cabal" "Setup.hs" "LICENSE"]))
                                   ./.;
   buildDepends = [
