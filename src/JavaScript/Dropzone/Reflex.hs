@@ -1,7 +1,10 @@
 {-# LANGUAGE CPP, RecursiveDo, OverloadedStrings, ScopedTypeVariables #-}
 module JavaScript.Dropzone.Reflex (
+  reflexDropzoneOptions,
+
+  -- * Functions
   newDropzoneOn,
-  dropzoneAddedEventForEvent               
+  dropzoneAddedEventForEvent
 )
 
 where
@@ -9,6 +12,7 @@ where
 import JavaScript.Dropzone.GHCJSDOM
 
 import Control.Monad.IO.Class
+import Data.String
 import GHCJS.DOM.File
 import GHCJS.DOM.HTMLElement
 
@@ -19,6 +23,9 @@ import Reflex.Dom
 import Control.Monad.Trans.Reader
 #endif
 
+reflexDropzoneOptions :: IsString a => a
+reflexDropzoneOptions = "{ autoProcessQueue: false, addRemoveLinks: true, url: \"/file/post\"}"
+
 -- | Dropzone seems to be unhappy if it's created too early
 --   eg Errors like this after adding files by 'click':
 -- >
@@ -27,15 +34,16 @@ import Control.Monad.Trans.Reader
 -- ... so instead of exposing 'private_newDropzone' directly, we expose
 -- a Reflex 'Event' which will supply the 'Dropzone' once it has been
 -- safely constructed.
-newDropzoneOn :: MonadWidget t m => HTMLElement -> m (Event t Dropzone)
-newDropzoneOn elt = do
+newDropzoneOn :: MonadWidget t m => HTMLElement -> String -> m (Event t Dropzone)
+newDropzoneOn elt opts = do
   pb       <- getPostBuild
-  edz      <- performEvent $ (liftIO $ private_newDropzone elt) <$ pb
+  edz      <- performEvent $ (liftIO $ private_newDropzone elt opts) <$ pb
   return edz
 
 ------------------------------------------------------------------------
 -- Reflex Events
 
+-- | Variant of 'dropzoneAddedEvent' which takes an Event
 dropzoneAddedEventForEvent :: forall t m . MonadWidget t m => Event t Dropzone -> m (Event t File)
 dropzoneAddedEventForEvent edropzone = do
   let eefile = dropzoneAddedEvent <$> edropzone ::   Event t (m (Event t File))
@@ -43,8 +51,9 @@ dropzoneAddedEventForEvent edropzone = do
   return $ switchPromptlyDyn ddzadd             ::            m (Event t File)
 
 #ifdef ghcjs_HOST_OS
+-- | Register for "addedfile" events on the Dropzone
 dropzoneAddedEvent :: forall t m . MonadWidget t m => Dropzone -> m (Event t File)
-dropzoneAddedEvent elt = wrapDomEvent elt (connect "addedfile") (asks snd) -- BM: "asks snd" == return the File as the value of the Reflex Event
+dropzoneAddedEvent elt = wrapDomEvent elt (connect "addedfile") (asks snd) -- "asks snd": use the File as value of Reflex Event
   where
     -- connect :: (GObjectClass t, IsEvent e) => String -> t -> ReaderT (t,e) IO () -> IO (IO ())
     connect :: String -> Dropzone -> ReaderT (Dropzone, File) IO () -> IO (IO ())
