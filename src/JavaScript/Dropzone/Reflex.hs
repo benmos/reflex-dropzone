@@ -25,7 +25,6 @@ where
 
 import JavaScript.Dropzone.Core
 
-import Control.Arrow ((***))
 import Control.Monad.IO.Class
 import Data.String
 import GHCJS.DOM.File
@@ -39,6 +38,7 @@ import qualified Data.Text       as T
 import qualified GHCJS.DOM.Types as GJST
 
 #ifdef ghcjs_HOST_OS
+import Control.Arrow ((***))
 import Control.Monad.Trans.Reader
 import GHCJS.Foreign
 import GHCJS.Types
@@ -107,7 +107,7 @@ dropzoneEventFor1 ename elt = wrapDomEvent elt (connect ename) (asks snd) -- "as
       dropzoneRegisterListener1 target eventName $ \dz a -> runReaderT callback (dz, a)
 #else
 -- | Callbacks with arity 1
-dropzoneEventFor1 :: forall t m a . (MonadWidget t m) => String -> Dropzone -> m (Event t (JSRef a))
+dropzoneEventFor1 :: forall t m a . (MonadWidget t m) => String -> Dropzone -> m (Event t a)
 dropzoneEventFor1 _ _ = return never
 #endif
 
@@ -122,7 +122,7 @@ dropzoneEventFor2 ename elt = wrapDomEvent elt (connect ename) (asks snd) -- "as
       dropzoneRegisterListener2 target eventName $ \dz a b -> runReaderT callback (dz, (a, b))
 #else
 -- | Callbacks with arity 2
-dropzoneEventFor2 :: forall t m a b . (MonadWidget t m) => String -> Dropzone -> m (Event t (JSRef a, JSRef b))
+dropzoneEventFor2 :: forall t m a b . (MonadWidget t m) => String -> Dropzone -> m (Event t (a, b))
 dropzoneEventFor2 _ _ = return never
 #endif
 
