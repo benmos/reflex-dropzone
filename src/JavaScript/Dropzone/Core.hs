@@ -25,6 +25,8 @@ where
 
 import GHCJS.DOM.HTMLElement
 
+import qualified Data.Aeson as Aeson
+
 #ifdef ghcjs_HOST_OS
 import GHCJS.DOM.Types
 import GHCJS.Foreign
@@ -56,11 +58,11 @@ newtype Dropzone = Dropzone ()
 #ifdef ghcjs_HOST_OS
 foreign import javascript safe
   "(new Dropzone($1, $2))"
-  js_newDropzone_raw :: HTMLElement -> JSString -> IO (JSRef Dropzone)
-js_newDropzone :: HTMLElement -> String -> IO (JSRef Dropzone)
-js_newDropzone elt opts = js_newDropzone_raw elt (toJSString opts)
+  js_newDropzone_raw :: HTMLElement -> JSRef Aeson.Value  -> IO (JSRef Dropzone)
+js_newDropzone :: HTMLElement -> Aeson.Value -> IO (JSRef Dropzone)
+js_newDropzone elt opts = js_newDropzone_raw elt =<< toJSRef opts
 #else
-js_newDropzone :: HTMLElement -> String -> IO ()
+js_newDropzone :: HTMLElement -> Aeson.Value -> IO ()
 js_newDropzone = error "js_newDropzone is only available under GHCJS"
 #endif
 
@@ -68,7 +70,7 @@ js_newDropzone = error "js_newDropzone is only available under GHCJS"
 -- ...Dropzone seems to be unhappy if it's created too early
 -- eg Errors like this after adding files by 'click':
 -- "null is not an object (evaluating '_this.hiddenFileInput.parentNode.removeChild')"
-private_newDropzone :: HTMLElement -> String -> IO Dropzone
+private_newDropzone :: HTMLElement -> Aeson.Value -> IO Dropzone
 private_newDropzone e opts = Dropzone <$> js_newDropzone e opts
 
 

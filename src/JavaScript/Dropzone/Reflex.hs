@@ -50,7 +50,7 @@ where
 import JavaScript.Dropzone.Core
 
 import Control.Monad.IO.Class
-import Data.String
+import Data.Aeson ((.=))
 import GHCJS.DOM.File
 import GHCJS.DOM.HTMLElement
 import GHCJS.DOM.Types hiding (Event) -- Clashes with Reflex
@@ -58,6 +58,7 @@ import GHCJS.DOM.Types hiding (Event) -- Clashes with Reflex
 import Reflex
 import Reflex.Dom
 
+import qualified Data.Aeson      as Aeson
 import qualified Data.Text       as T
 import qualified GHCJS.DOM.Types as GJST
 
@@ -68,8 +69,14 @@ import GHCJS.Foreign
 import GHCJS.Types
 #endif
 
-reflexDropzoneOptions :: IsString a => a
-reflexDropzoneOptions = "{ autoProcessQueue: false, addRemoveLinks: true, url: \"/file/post\"}"
+-- "{ autoProcessQueue: false, addRemoveLinks: true, url: \"/file/post\"}"
+reflexDropzoneOptions :: Aeson.Value
+reflexDropzoneOptions = Aeson.object [
+  "autoProcessQueue" .= False,
+  "addRemoveLinks" .= True,
+  "url" .= Aeson.String "/file/post"
+   ]
+
 
 -- | Dropzone seems to be unhappy if it's created too early
 --   eg Errors like this after adding files by 'click':
@@ -83,7 +90,7 @@ reflexDropzoneOptions = "{ autoProcessQueue: false, addRemoveLinks: true, url: \
 --
 -- > count <=< eventWhenReady dropzoneAddedFile <=< newDropzoneOn dze $ opts
 --
-newDropzoneOn :: MonadWidget t m => HTMLElement -> String -> m (Event t Dropzone)
+newDropzoneOn :: MonadWidget t m => HTMLElement -> Aeson.Value -> m (Event t Dropzone)
 newDropzoneOn elt opts = do
   pb       <- getPostBuild
   edz      <- performEvent $ (liftIO $ private_newDropzone elt opts) <$ pb
