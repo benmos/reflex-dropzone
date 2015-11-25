@@ -1,5 +1,5 @@
 { mkDerivation, stdenv,
-  ghcjs-dom, reflex, reflex-dom, these
+  ghcjs-dom, reflex, reflex-dom, text, these
 }:
 mkDerivation {
   pname        = "reflex-dropzone";
@@ -14,7 +14,7 @@ mkDerivation {
                                          builtins.elem base ["reflex-dropzone.cabal" "Setup.hs" "LICENSE"]))
                                   ./.;
   buildDepends = [
-    ghcjs-dom reflex reflex-dom these
+    ghcjs-dom reflex reflex-dom text these
   ];
   testDepends = [
   ];
