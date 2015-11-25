@@ -18,7 +18,31 @@ module JavaScript.Dropzone.Reflex (
   dropzoneEventForFileText,
 
   -- * Specific Events
-  dropzoneAddedFile
+  dropzoneAddedFile,
+  dropzoneCancelled,
+  dropzoneComplete,
+  dropzoneMaxFilesExceeded,
+  dropzoneProcessing,
+  dropzoneRemovedFile,
+
+  dropzoneDragEnd,
+  dropzoneDragEnter,
+  dropzoneDragLeave,
+  dropzoneDragOver,
+  dropzoneDragStart,
+  dropzoneDrop,
+  dropzonePaste,
+
+  dropzoneEventForFiles,
+  dropzoneError,
+  dropzoneSuccess,
+  dropzoneThumbnail,
+  dropzoneAddedFiles,
+  dropzoneCanceledMultiple,
+  dropzoneCompleteMultiple,
+  dropzoneProcessingMultiple,
+  dropzoneQueueComplete,
+  dropzoneReset
 )
 
 where
@@ -131,13 +155,24 @@ dropzoneEventFor2 _ _ = return never
 -- Reflex Events - Different Types
 
 dropzoneEventForObj :: forall t m a . (MonadWidget t m, GObjectClass a) => String -> Dropzone -> m (Event t a)
-dropzoneEventForObj self eventName = fmap (unsafeCastGObject . GObject) <$> dropzoneEventFor1 self eventName
+dropzoneEventForObj eventName self = fmap (unsafeCastGObject . GObject) <$> dropzoneEventFor1 eventName self
 
 dropzoneEventForFile :: MonadWidget t m => String -> Dropzone -> m (Event t File)
 dropzoneEventForFile = dropzoneEventForObj
 
 dropzoneEventForDOMEvent :: MonadWidget t m => String -> Dropzone -> m (Event t GJST.Event)
 dropzoneEventForDOMEvent = dropzoneEventForObj
+
+#ifdef ghcjs_HOST_OS
+dropzoneEventForFiles :: MonadWidget t m => String -> Dropzone -> m (Event t [File])
+dropzoneEventForFiles eventName self = do
+  eref  <- dropzoneEventFor1 eventName self
+  erefs <- performEvent (liftIO . fromArray <$> eref)
+  return $ map (unsafeCastGObject . GObject) <$> erefs
+#else
+dropzoneEventForFiles :: MonadWidget t m => String -> Dropzone -> m (Event t [File])
+dropzoneEventForFiles  _ _ = return never
+#endif
 
 #ifdef ghcjs_HOST_OS
 dropzoneEventForFileText :: MonadWidget t m => String -> Dropzone -> m (Event t (File, T.Text))
@@ -151,7 +186,88 @@ dropzoneEventForFileText _ _ = return never
 ------------------------------------------------------------------------
 -- Specific Dropzone Events
 
+-- File Events
+
 -- | Register for "addedfile" events on the Dropzone
 dropzoneAddedFile :: forall t m . MonadWidget t m => Dropzone -> m (Event t File)
 dropzoneAddedFile = dropzoneEventForFile "addedfile"
+
+dropzoneCancelled :: forall t m . MonadWidget t m => Dropzone -> m (Event t File)
+dropzoneCancelled = dropzoneEventForFile "cancelled"
+
+dropzoneComplete :: forall t m . MonadWidget t m => Dropzone -> m (Event t File)
+dropzoneComplete = dropzoneEventForFile "complete"
+
+dropzoneMaxFilesExceeded :: forall t m . MonadWidget t m => Dropzone -> m (Event t File)
+dropzoneMaxFilesExceeded = dropzoneEventForFile "maxfilesexceeded"
+
+dropzoneProcessing :: forall t m . MonadWidget t m => Dropzone -> m (Event t File)
+dropzoneProcessing = dropzoneEventForFile "processing"
+
+dropzoneRemovedFile :: forall t m . MonadWidget t m => Dropzone -> m (Event t File)
+dropzoneRemovedFile = dropzoneEventForFile "removedfile"
+
+
+-- File+Text Events
+
+dropzoneError :: forall t m . MonadWidget t m => Dropzone -> m (Event t (File, T.Text))
+dropzoneError = dropzoneEventForFileText "error"
+
+dropzoneSuccess :: forall t m . MonadWidget t m => Dropzone -> m (Event t (File, T.Text))
+dropzoneSuccess = dropzoneEventForFileText "success"
+
+dropzoneThumbnail :: forall t m . MonadWidget t m => Dropzone -> m (Event t (File, T.Text))
+dropzoneThumbnail = dropzoneEventForFileText "thumbnail"
+
+
+-- Multiple File Events
+
+dropzoneAddedFiles :: forall t m . MonadWidget t m => Dropzone -> m (Event t [File])
+dropzoneAddedFiles = dropzoneEventForFiles "addedfiles"
+
+dropzoneCanceledMultiple :: forall t m . MonadWidget t m => Dropzone -> m (Event t [File])
+dropzoneCanceledMultiple = dropzoneEventForFiles "canceledmultiple"
+
+dropzoneCompleteMultiple :: forall t m . MonadWidget t m => Dropzone -> m (Event t [File])
+dropzoneCompleteMultiple = dropzoneEventForFiles "completemultiple"
+
+dropzoneProcessingMultiple :: forall t m . MonadWidget t m => Dropzone -> m (Event t [File])
+dropzoneProcessingMultiple = dropzoneEventForFiles "processingmultiple"
+
+
+-- DOM Events
+
+dropzoneDragEnd :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneDragEnd = dropzoneEventForDOMEvent "dragend"
+
+dropzoneDragEnter :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneDragEnter = dropzoneEventForDOMEvent "dragenter"
+
+dropzoneDragLeave :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneDragLeave = dropzoneEventForDOMEvent "dragleave"
+
+dropzoneDragOver :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneDragOver = dropzoneEventForDOMEvent "dragover"
+
+dropzoneDragStart :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneDragStart = dropzoneEventForDOMEvent "dragstart"
+
+dropzoneDrop :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneDrop = dropzoneEventForDOMEvent "drop"
+
+dropzonePaste :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzonePaste = dropzoneEventForDOMEvent "paste"
+
+
+-- Other
+-- "sending"
+-- "uploadprogress"
+-- "totaluploadprogress"
+-- "sendingmultiple"
+
+dropzoneQueueComplete :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneQueueComplete = dropzoneEventForDOMEvent "queuecomplete"
+
+dropzoneReset :: forall t m . MonadWidget t m => Dropzone -> m (Event t GJST.Event)
+dropzoneReset = dropzoneEventForDOMEvent "reset"
 

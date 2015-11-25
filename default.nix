@@ -3,7 +3,7 @@
 }:
 mkDerivation {
   pname        = "reflex-dropzone";
-  version      = "0.0";
+  version      = "0.1";
   src          = builtins.filterSource (path: type:
                                         let base   = baseNameOf path;
                                             prefix = builtins.substring 0 1 base;
