@@ -1,8 +1,8 @@
 ## Reflex Dropzone
 
-Very Primitive and incomplete wrapping of dropzone.js for use in Reflex Apps.
+Basic bindings to dropzone.js for use in Reflex Apps.
 
-One of the goals of this package is to act as a proof-of-concept for using the GHCJS FFI to wrap a third-party JS library.
+One my personal goals for this package is to act as an experiment in using the GHCJS FFI to wrap a third-party JS library.
 
 ### old-base vs improved-base
 This is all working with GHCJS ghcjs-base 'old-base' for now (because that's what Reflex is currently using).
