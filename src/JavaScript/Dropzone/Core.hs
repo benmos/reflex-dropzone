@@ -1,6 +1,6 @@
-{-# LANGUAGE CPP, OverloadedStrings, ForeignFunctionInterface #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 #ifdef ghcjs_HOST_OS
-{-# LANGUAGE JavaScriptFFI #-}
+{-# LANGUAGE ForeignFunctionInterface, JavaScriptFFI #-}
 #endif
 module JavaScript.Dropzone.Core (
   -- * Types
