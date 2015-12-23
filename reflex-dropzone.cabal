@@ -20,7 +20,7 @@ library
     base >= 4.7 && < 4.9,
     mtl >= 2.1 && < 2.3,
     containers == 0.5.*,
-    ghcjs-dom >= 0.1.1.3 && < 0.2,
+    ghcjs-dom >= 0.2,
     reflex,
     reflex-dom,
     text                      >= 0.11,

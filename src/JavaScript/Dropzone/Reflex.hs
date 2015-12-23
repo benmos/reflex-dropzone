@@ -51,6 +51,7 @@ import JavaScript.Dropzone.Core
 
 import Control.Monad.IO.Class
 import Data.Aeson ((.=))
+import Data.JSString.Text(textFromJSVal)
 import GHCJS.DOM.File
 import GHCJS.DOM.HTMLElement
 import GHCJS.DOM.Types hiding (Event) -- Clashes with Reflex
@@ -58,14 +59,16 @@ import GHCJS.DOM.Types hiding (Event) -- Clashes with Reflex
 import Reflex
 import Reflex.Dom
 
-import qualified Data.Aeson      as Aeson
-import qualified Data.Text       as T
-import qualified GHCJS.DOM.Types as GJST
+import qualified Data.Aeson       as Aeson
+import qualified Data.Text        as T
+import qualified GHCJS.DOM.Types  as GJST
+
+-- import Data.JSString.Internal.Type (JSString(..)) -- FIXME - remove dependency on this!!!!!!!!
 
 #ifdef ghcjs_HOST_OS
 import Control.Arrow ((***))
 import Control.Monad.Trans.Reader
-import GHCJS.Foreign
+import GHCJS.Marshal
 import GHCJS.Types
 #endif
 
@@ -130,10 +133,10 @@ dropzoneEventFor0 _ _ = return never
 
 #ifdef ghcjs_HOST_OS
 -- | Callbacks with arity 1
-dropzoneEventFor1 :: forall t m a . (MonadWidget t m) => String -> Dropzone -> m (Event t (JSRef a))
+dropzoneEventFor1 :: forall t m . (MonadWidget t m) => String -> Dropzone -> m (Event t JSVal)
 dropzoneEventFor1 ename elt = wrapDomEvent elt (connect ename) (asks snd) -- "asks snd": use the obj as value of Reflex Event
   where
-    connect :: String -> Dropzone -> ReaderT (Dropzone, (JSRef a)) IO () -> IO (IO ())
+    connect :: String -> Dropzone -> ReaderT (Dropzone, JSVal) IO () -> IO (IO ())
     connect eventName target callback =
       dropzoneRegisterListener1 target eventName $ \dz a -> runReaderT callback (dz, a)
 #else
@@ -145,10 +148,10 @@ dropzoneEventFor1 _ _ = return never
 
 #ifdef ghcjs_HOST_OS
 -- | Callbacks with arity 2
-dropzoneEventFor2 :: forall t m a b . (MonadWidget t m) => String -> Dropzone -> m (Event t (JSRef a, JSRef b))
+dropzoneEventFor2 :: forall t m . (MonadWidget t m) => String -> Dropzone -> m (Event t (JSVal, JSVal))
 dropzoneEventFor2 ename elt = wrapDomEvent elt (connect ename) (asks snd) -- "asks snd": use the objs as value of Reflex Event
   where
-    connect :: String -> Dropzone -> ReaderT (Dropzone, (JSRef a, JSRef b)) IO () -> IO (IO ())
+    connect :: String -> Dropzone -> ReaderT (Dropzone, (JSVal, JSVal)) IO () -> IO (IO ())
     connect eventName target callback =
       dropzoneRegisterListener2 target eventName $ \dz a b -> runReaderT callback (dz, (a, b))
 #else
@@ -161,7 +164,7 @@ dropzoneEventFor2 _ _ = return never
 ------------------------------------------------------------------------
 -- Reflex Events - Different Types
 
-dropzoneEventForObj :: forall t m a . (MonadWidget t m, GObjectClass a) => String -> Dropzone -> m (Event t a)
+dropzoneEventForObj :: forall t m a . (MonadWidget t m, IsGObject a) => String -> Dropzone -> m (Event t a)
 dropzoneEventForObj eventName self = fmap (unsafeCastGObject . GObject) <$> dropzoneEventFor1 eventName self
 
 dropzoneEventForFile :: MonadWidget t m => String -> Dropzone -> m (Event t File)
@@ -174,7 +177,8 @@ dropzoneEventForDOMEvent = dropzoneEventForObj
 dropzoneEventForFiles :: MonadWidget t m => String -> Dropzone -> m (Event t [File])
 dropzoneEventForFiles eventName self = do
   eref  <- dropzoneEventFor1 eventName self
-  erefs <- performEvent (liftIO . fromArray <$> eref)
+  -- erefs <- performEvent (liftIO . fromArray <$> eref) -- old-base
+  erefs <- performEvent (fmap (maybe [] id) . liftIO . fromJSValListOf <$> eref)
   return $ map (unsafeCastGObject . GObject) <$> erefs
 #else
 dropzoneEventForFiles :: MonadWidget t m => String -> Dropzone -> m (Event t [File])
@@ -183,7 +187,7 @@ dropzoneEventForFiles  _ _ = return never
 
 #ifdef ghcjs_HOST_OS
 dropzoneEventForFileText :: MonadWidget t m => String -> Dropzone -> m (Event t (File, T.Text))
-dropzoneEventForFileText ename dz = fmap ((unsafeCastGObject . GObject) *** fromJSString) <$> dropzoneEventFor2 ename dz
+dropzoneEventForFileText ename dz = fmap ((unsafeCastGObject . GObject) *** textFromJSVal) <$> dropzoneEventFor2 ename dz
 #else
 dropzoneEventForFileText :: MonadWidget t m => String -> Dropzone -> m (Event t (File, T.Text))
 dropzoneEventForFileText _ _ = return never
