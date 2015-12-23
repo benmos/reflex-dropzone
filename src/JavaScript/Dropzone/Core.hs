@@ -23,20 +23,13 @@ module JavaScript.Dropzone.Core (
 
 where
 
--- import Control.Monad.Trans.Reader
--- import Control.Monad.IO.Class
-
--- import GHCJS.DOM.EventM
--- import GHCJS.DOM.EventTargetClosures
 import GHCJS.DOM.HTMLElement
-import GHCJS.Foreign.Callback
--- import GHCJS.Foreign.Callback.Internal(Callback(..))
 
 import qualified Data.Aeson as Aeson
 
 #ifdef ghcjs_HOST_OS
 import GHCJS.DOM.Types
--- import GHCJS.Foreign
+import GHCJS.Foreign.Callback
 import GHCJS.Marshal
 import GHCJS.Marshal.Pure (PFromJSVal(..), PToJSVal(..)) -- 2015-10-06 Rename JSRef to JSVal...
 import GHCJS.Types

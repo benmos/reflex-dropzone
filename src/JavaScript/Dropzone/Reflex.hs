@@ -51,7 +51,6 @@ import JavaScript.Dropzone.Core
 
 import Control.Monad.IO.Class
 import Data.Aeson ((.=))
-import Data.JSString.Text(textFromJSVal)
 import GHCJS.DOM.File
 import GHCJS.DOM.HTMLElement
 import GHCJS.DOM.Types hiding (Event) -- Clashes with Reflex
@@ -63,11 +62,10 @@ import qualified Data.Aeson       as Aeson
 import qualified Data.Text        as T
 import qualified GHCJS.DOM.Types  as GJST
 
--- import Data.JSString.Internal.Type (JSString(..)) -- FIXME - remove dependency on this!!!!!!!!
-
 #ifdef ghcjs_HOST_OS
 import Control.Arrow ((***))
 import Control.Monad.Trans.Reader
+import Data.JSString.Text(textFromJSVal)
 import GHCJS.Marshal
 import GHCJS.Types
 #endif
